@@ -90,6 +90,8 @@ Loomio::Application.routes.draw do
       get :inbox, on: :collection
     end
 
+    resources :search, only: :index
+
     resources :motions,     only: [:show, :index, :create, :update], path: :proposals do
       post :close, on: :member
       post :create_outcome, on: :member
@@ -123,8 +125,6 @@ Loomio::Application.routes.draw do
     resources :contacts, only: :index do
       get :import, on: :collection
     end
-
-    resources :search_results, only: :index
 
     resources :contact_messages, only: :create
 
