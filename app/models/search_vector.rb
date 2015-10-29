@@ -65,7 +65,7 @@ class SearchVector < ActiveRecord::Base
 
   scope :search_without_privacy!, ->(query, user, opts = {}) do
     query = sanitize(query)
-    self.select(:discussion_id, :search_vector)
+    self.select(:discussion_id, :search_vector, 'groups.full_name as result_group_name')
         .select("ts_rank_cd('{#{WEIGHT_VALUES.join(',')}}', search_vector, plainto_tsquery(#{query})) as rank")
         .where("search_vector @@ plainto_tsquery(#{query})")
         .order('rank DESC')
