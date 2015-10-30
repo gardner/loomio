@@ -20,10 +20,10 @@ class SearchVector < ActiveRecord::Base
 
   class << self
     def index!(discussion_ids)
-      discussion_ids = Array(discussion_ids)
+      discussion_ids = Array(discussion_ids).map(&:to_i)
       where(discussion_id: discussion_ids).delete_all
-      discussion_ids.each do |id|
-        connection.execute sanitize_sql_array index_thread_sql, id: id
+      discussion_ids.each do |discussion_id|
+        connection.execute index_thread_sql(discussion_id)
         yield if block_given?
       end
     end
@@ -35,7 +35,7 @@ class SearchVector < ActiveRecord::Base
     index_without_delay! Discussion.pluck(:id)
   end
 
-  def self.index_thread_sql
+  def self.index_thread_sql(discussion_id)
     "INSERT INTO discussion_search_vectors (discussion_id, search_vector)
      SELECT      id, #{discussion_field_weights}
      FROM        discussions
@@ -43,12 +43,12 @@ class SearchVector < ActiveRecord::Base
        SELECT string_agg(name, ',')                     AS motion_names,
               LEFT(string_agg(description, ','), 10000) AS motion_descriptions
        FROM   motions
-       WHERE  discussion_id = :id) motions ON :id = id
+       WHERE  discussion_id = #{discussion_id}) motions ON #{discussion_id} = id
      LEFT JOIN (
        SELECT LEFT(string_agg(body, ','), 200000)       AS comment_bodies
        FROM   comments
-       WHERE  discussion_id = :id) comments ON :id = id
-     WHERE    id = :id"
+       WHERE  discussion_id = #{discussion_id}) comments ON #{discussion_id} = id
+     WHERE    id = #{discussion_id}"
   end
 
   def self.discussion_field_weights
