@@ -19,6 +19,7 @@ class GroupSerializer < ActiveModel::Serializer
              :motions_count,
              :discussions_count,
              :memberships_count,
+             :invitations_count,
              :visible_to,
              :membership_granted_upon,
              :discussion_privacy_options,
